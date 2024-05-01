@@ -78,9 +78,8 @@ class RequestSerializer(serializers.Serializer):
 	user_response = serializers.IntegerField()
 
 	def validate(self, data):
-		quiz_id = data.data['quiz_id']
-		user_response = data.data['user_response']
-		user = data.user
+		quiz_id = data['quiz_id']
+		user_response = data['user_responses']
 
 		quiz = models.Quiz.objects.get(pk=quiz_id)
 		user = models.User.objects.get(pk=user)
@@ -88,7 +87,7 @@ class RequestSerializer(serializers.Serializer):
 		questions = quiz.questions.all()
 
 		if len(questions) != len(answers):
-			raise serializers.ValidationError('Invalid number of answers')
+			return serializers.ValidationError('Invalid number of answers')
 
 		for question, answer in zip(questions, answers):
 			correct_counts = question.answers.filter(correct=True).count()

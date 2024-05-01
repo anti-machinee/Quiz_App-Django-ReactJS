@@ -109,11 +109,6 @@ class QuizViewSet(viewsets.ModelViewSet):
 	@action(detail=True,methods=['post'])
 	def evaluation(self, request, pk=None):
 		try:
-			# validate request data
-			serializer = serializers.RequestSerializer(data=request)
-			if not serializer.is_valid():
-				return JsonResponse(serializer.errors, status=400)
-
 			user     = request.user
 			quiz_id = request.data['quiz_id']
 			quiz     = get_object_or_404(models.Quiz, id=quiz_id)
