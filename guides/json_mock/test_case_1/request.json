@@ -1,9 +1,19 @@
-{"quiz_id": 1, "user_responses": [
-    {"question_id": 1, "answers": ["3"
-        ]
-    },
-    {"question_id": 3, "answers": ["10", "11", "14"
-        ]
-    }
-]
+{
+    "quiz_id": 1,
+    "user_responses": [
+        {
+            "question_id": 1,
+            "answers": [
+                "3"
+            ]
+        },
+        {
+            "question_id": 3,
+            "answers": [
+                "10",
+                "11",
+                "14"
+            ]
+        }
+    ]
 }
