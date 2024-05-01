@@ -6,6 +6,7 @@ from django.db.models import Q
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 from . import models, serializers
 
@@ -107,63 +108,66 @@ class QuizViewSet(viewsets.ModelViewSet):
 	
 	@action(detail=True,methods=['post'])
 	def evaluation(self, request, pk=None):
-		user     = request.user
-		quiz_id = request.data['quiz_id']
-		quiz     = get_object_or_404(models.Quiz, id=quiz_id)
-		questions = models.Question.objects.filter(quiz_id=quiz_id)
+		try:
+			user     = request.user
+			quiz_id = request.data['quiz_id']
+			quiz     = get_object_or_404(models.Quiz, id=quiz_id)
+			questions = models.Question.objects.filter(quiz_id=quiz_id)
 
-		submit_id = str(uuid.uuid4())
-		print(request.data)
-		user_responses = {}
-		for user_res in request.data["user_responses"]:
-			user_responses[user_res["question_id"]] = ' '.join(user_res["answers"])
+			submit_id = str(uuid.uuid4())
+			print(request.data)
+			user_responses = {}
+			for user_res in request.data["user_responses"]:
+				user_responses[user_res["question_id"]] = ' '.join(user_res["answers"])
 
-		# save to user response to database
-		for ques in questions:
-			ques_user_answer = user_responses[ques.id]
-			obj = models.UserResponse(user=user,
-							 quiz=quiz, 
-							 question_id=str(ques.id),
-							 created_at=datetime.datetime.now(),
-							 submit_id=submit_id,
-							 user_answers=ques_user_answer,
-			)
-			obj.save()
-
-		# make evaluations
-		score_quiz = []
-		for ques in questions:
-			user_res_query = models.UserResponse.objects.filter(
-				question_id=ques.id, 
-				submit_id=submit_id,
-				quiz_id=quiz_id)
-			user_res = user_res_query.values_list("user_answers", flat=True)[0]
-			user_res = user_res.split()
-			answers = models.Answer.objects.filter(
-				question_id=ques.id)
-			score = mark_scores(answers, user_res)
-			score_quiz.append(score)
-			# update user response
-			for obj in user_res_query:
-				obj.score = score
+			# save to user response to database
+			for ques in questions:
+				ques_user_answer = user_responses[ques.id]
+				obj = models.UserResponse(user=user,
+								quiz=quiz, 
+								question_id=str(ques.id),
+								created_at=datetime.datetime.now(),
+								submit_id=submit_id,
+								user_answers=ques_user_answer,
+				)
 				obj.save()
-		score_quiz = round(sum(score_quiz) / len(score_quiz) * 100, 2)
 
-		# save user record
-		user_record = models.UserRecord(
-			user=user,
-			quiz=quiz,
-			submit_id=submit_id,
-			score=score_quiz
-		)
-		user_record.save()
+			# make evaluations
+			score_quiz = []
+			for ques in questions:
+				user_res_query = models.UserResponse.objects.filter(
+					question_id=ques.id, 
+					submit_id=submit_id,
+					quiz_id=quiz_id)
+				user_res = user_res_query.values_list("user_answers", flat=True)[0]
+				user_res = user_res.split()
+				answers = models.Answer.objects.filter(
+					question_id=ques.id)
+				score = mark_scores(answers, user_res)
+				score_quiz.append(score)
+				# update user response
+				for obj in user_res_query:
+					obj.score = score
+					obj.save()
+			score_quiz = round(sum(score_quiz) / len(score_quiz) * 100, 2)
 
-		user_responses = models.UserResponse.objects.filter(submit_id=submit_id)
-		serializer = serializers.UserResponseSerializer(
-			user_responses,
-			many=True,
-		)
-		return Response(serializer.data)
+			# save user record
+			user_record = models.UserRecord(
+				user=user,
+				quiz=quiz,
+				submit_id=submit_id,
+				score=score_quiz
+			)
+			user_record.save()
+
+			user_responses = models.UserResponse.objects.filter(submit_id=submit_id)
+			serializer = serializers.UserResponseSerializer(
+				user_responses,
+				many=True,
+			)
+			return Response(serializer.data)
+		except Exception as e:
+			return JsonResponse({'error': str(e)}, status=500)
 	
 
 def mark_scores(answers, user_res):
