@@ -8,3 +8,6 @@
 - User records in database
 - Marking rules for different question types. For single answer, only one answer out of the possible choices is correct. Multi answers, all correct options should be selected to be evaluated as correct
 - Basic front end using ReactJS
+
+# Not completed
+- Production version of the application
