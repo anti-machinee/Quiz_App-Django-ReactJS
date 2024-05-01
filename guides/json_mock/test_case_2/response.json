@@ -1,0 +1,22 @@
+[
+    {
+        "id": 131,
+        "user_answers": "1",
+        "submit_id": "b8b01f82-8f1d-4f24-b2d0-586e639e8def",
+        "created_at": "2024-05-01T05:31:59.903583Z",
+        "score": 0,
+        "user": 2,
+        "quiz": 1,
+        "question": 1
+    },
+    {
+        "id": 132,
+        "user_answers": "11",
+        "submit_id": "b8b01f82-8f1d-4f24-b2d0-586e639e8def",
+        "created_at": "2024-05-01T05:31:59.907556Z",
+        "score": 0,
+        "user": 2,
+        "quiz": 1,
+        "question": 3
+    }
+]
